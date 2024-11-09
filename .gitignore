@@ -91,7 +91,7 @@ local/
 
 *.wav
 test/out/
-dist/
+#dist/
 assets/standalone/faust-ui
 assets/standalone/faustwasm
 test/faustlive-wasm/faust-ui
