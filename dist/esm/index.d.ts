@@ -619,6 +619,20 @@ export interface IFaustBaseWebAudioDsp {
 	 */
 	pitchWheel(chan: number, value: number): void;
 	/**
+	 * Handle MIDI keyOn messages.
+	 * @param channel
+	 * @param pitch
+	 * @param velocity
+	 */
+	keyOn(channel: number, pitch: number, velocity: number): void;
+	/**
+	 * Handle MIDI keyOn messages.
+	 * @param channel
+	 * @param pitch
+	 * @param velocity
+	 */
+	keyOff(channel: number, pitch: number, velocity: number): void;
+	/**
 	 * Set parameter value.
 	 *
 	 * @param path - the path to the wanted parameter (retrieved using 'getParams' method)
@@ -767,6 +781,24 @@ export declare class FaustBaseWebAudioDsp implements IFaustBaseWebAudioDsp {
 		min: number;
 		max: number;
 	}[][];
+	protected fMidiKeyLabel: {
+		path: string;
+		chan: number;
+		min: number;
+		max: number;
+	}[][];
+	protected fMidiKeyOnLabel: {
+		path: string;
+		chan: number;
+		min: number;
+		max: number;
+	}[][];
+	protected fMidiKeyOffLabel: {
+		path: string;
+		chan: number;
+		min: number;
+		max: number;
+	}[][];
 	protected fPathTable: {
 		[address: string]: number;
 	};
@@ -826,6 +858,8 @@ export declare class FaustBaseWebAudioDsp implements IFaustBaseWebAudioDsp {
 	getNumOutputs(): number;
 	midiMessage(data: number[] | Uint8Array): void;
 	ctrlChange(channel: number, ctrl: number, value: number): void;
+	keyOn(channel: number, pitch: number, velocity: number): void;
+	keyOff(channel: number, pitch: number, velocity: number): void;
 	pitchWheel(channel: number, wheel: number): void;
 	setParamValue(path: string, value: number): void;
 	getParamValue(path: string): number;
@@ -1180,6 +1214,8 @@ export declare class FaustOfflineProcessor<Poly extends boolean = false> {
 	midiMessage(data: number[] | Uint8Array): void;
 	ctrlChange(chan: number, ctrl: number, value: number): void;
 	pitchWheel(chan: number, value: number): void;
+	keyOn(channel: number, pitch: number, velocity: number): void;
+	keyOff(channel: number, pitch: number, velocity: number): void;
 	setParamValue(path: string, value: number): void;
 	getParamValue(path: string): number;
 	getParams(): string[];
@@ -1374,6 +1410,8 @@ export declare class FaustAudioWorkletNode<Poly extends boolean = false> extends
 	midiMessage(data: number[] | Uint8Array): void;
 	ctrlChange(channel: number, ctrl: number, value: number): void;
 	pitchWheel(channel: number, wheel: number): void;
+	keyOn(channel: number, pitch: number, velocity: number): void;
+	keyOff(channel: number, pitch: number, velocity: number): void;
 	get hasAccInput(): boolean;
 	propagateAcc(accelerationIncludingGravity: NonNullable<DeviceMotionEvent["accelerationIncludingGravity"]>, invert?: boolean): void;
 	get hasGyrInput(): boolean;
@@ -1441,6 +1479,8 @@ export declare class FaustScriptProcessorNode<Poly extends boolean = false> exte
 	midiMessage(data: number[] | Uint8Array): void;
 	ctrlChange(chan: number, ctrl: number, value: number): void;
 	pitchWheel(chan: number, value: number): void;
+	keyOn(channel: number, pitch: number, velocity: number): void;
+	keyOff(channel: number, pitch: number, velocity: number): void;
 	setParamValue(path: string, value: number): void;
 	getParamValue(path: string): number;
 	getParams(): string[];

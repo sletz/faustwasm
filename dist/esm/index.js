@@ -186,6 +186,14 @@ var getFaustAudioWorkletProcessor = (dependencies, faustData, register = true) =
           this.pitchWheel(msg.data[0], msg.data[1]);
           break;
         }
+        case "keyOn": {
+          this.keyOn(msg.data[0], msg.data[1], msg.data[2]);
+          break;
+        }
+        case "keyOff": {
+          this.keyOff(msg.data[0], msg.data[1], msg.data[2]);
+          break;
+        }
         case "param": {
           this.setParamValue(msg.data.path, msg.data.value);
           break;
@@ -231,6 +239,12 @@ var getFaustAudioWorkletProcessor = (dependencies, faustData, register = true) =
     }
     pitchWheel(channel, wheel) {
       this.fDSPCode.pitchWheel(channel, wheel);
+    }
+    keyOn(channel, pitch, velocity) {
+      this.fDSPCode.keyOn(channel, pitch, velocity);
+    }
+    keyOff(channel, pitch, velocity) {
+      this.fDSPCode.keyOff(channel, pitch, velocity);
     }
     propagateAcc(accelerationIncludingGravity, invert = false) {
       this.fDSPCode.propagateAcc(accelerationIncludingGravity, invert);
@@ -2112,6 +2126,10 @@ var FaustBaseWebAudioDsp = class _FaustBaseWebAudioDsp {
     // MIDI handling
     this.fPitchwheelLabel = [];
     this.fCtrlLabel = new Array(128).fill(null).map(() => []);
+    // array of MIDI key handlers; array index is the MIDI note number
+    this.fMidiKeyLabel = new Array(128).fill(null).map(() => []);
+    this.fMidiKeyOnLabel = new Array(128).fill(null).map(() => []);
+    this.fMidiKeyOffLabel = new Array(128).fill(null).map(() => []);
     this.fPathTable = {};
     this.fUICallback = (item) => {
       if (item.type === "hbargraph" || item.type === "vbargraph") {
@@ -2124,6 +2142,7 @@ var FaustBaseWebAudioDsp = class _FaustBaseWebAudioDsp {
         if (!item.meta)
           return;
         item.meta.forEach((meta) => {
+          var _a, _b, _c, _d, _e, _f;
           const { midi, acc, gyr } = meta;
           if (midi) {
             const strMidi = midi.trim();
@@ -2137,10 +2156,25 @@ var FaustBaseWebAudioDsp = class _FaustBaseWebAudioDsp {
             } else {
               const matched2 = strMidi.match(/^ctrl\s(\d+)\s(\d+)/);
               const matched1 = strMidi.match(/^ctrl\s(\d+)/);
+              const matchedKey = strMidi.match(/^key\s+(\d+)(?:\s+(\d+))?$/);
+              const matchedKeyOn = strMidi.match(/^keyon\s+(\d+)(?:\s+(\d+))?$/);
+              const matchedKeyOff = strMidi.match(/^keyoff\s+(\d+)(?:\s+(\d+))?$/);
               if (matched2) {
                 this.fCtrlLabel[parseInt(matched2[1])].push({ path: item.address, chan: parseInt(matched2[2]), min: item.min, max: item.max });
               } else if (matched1) {
                 this.fCtrlLabel[parseInt(matched1[1])].push({ path: item.address, chan: 0, min: item.min, max: item.max });
+              } else if (matchedKey) {
+                const note = parseInt(matchedKey[1]);
+                const channel = matchedKey[2] ? parseInt(matchedKey[2]) : 0;
+                this.fMidiKeyLabel[note].push({ path: item.address, chan: channel, min: (_a = item.min) != null ? _a : 0, max: (_b = item.max) != null ? _b : 1 });
+              } else if (matchedKeyOn) {
+                const note = parseInt(matchedKeyOn[1]);
+                const channel = matchedKeyOn[2] ? parseInt(matchedKeyOn[2]) : 0;
+                this.fMidiKeyOnLabel[note].push({ path: item.address, chan: channel, min: (_c = item.min) != null ? _c : 0, max: (_d = item.max) != null ? _d : 1 });
+              } else if (matchedKeyOff) {
+                const note = parseInt(matchedKeyOff[1]);
+                const channel = matchedKeyOff[2] ? parseInt(matchedKeyOff[2]) : 0;
+                this.fMidiKeyOffLabel[note].push({ path: item.address, chan: channel, min: (_e = item.min) != null ? _e : 0, max: (_f = item.max) != null ? _f : 1 });
               }
             }
           }
@@ -2402,6 +2436,15 @@ var FaustBaseWebAudioDsp = class _FaustBaseWebAudioDsp {
       return this.ctrlChange(channel, data1, data2);
     if (cmd === 14)
       return this.pitchWheel(channel, data2 * 128 + data1);
+    if (cmd === 9) {
+      if (data2 > 0)
+        return this.keyOn(channel, data1, data2);
+      else
+        return this.keyOff(channel, data1, data2);
+    }
+    if (cmd === 8) {
+      return this.keyOff(channel, data1, data2);
+    }
   }
   ctrlChange(channel, ctrl, value) {
     if (this.fPlotHandler)
@@ -2416,6 +2459,46 @@ var FaustBaseWebAudioDsp = class _FaustBaseWebAudioDsp {
         }
       });
     }
+  }
+  keyOn(channel, pitch, velocity) {
+    if (this.fPlotHandler)
+      this.fCachedEvents.push({ type: "keyOn", data: [channel, pitch, velocity] });
+    this.fMidiKeyOnLabel[pitch].forEach((key) => {
+      const { path, chan } = key;
+      if (chan === 0 || channel === chan - 1) {
+        this.setParamValue(path, _FaustBaseWebAudioDsp.remap(velocity, 0, 127, key.min, key.max));
+        if (this.fOutputHandler)
+          this.fOutputHandler(path, this.getParamValue(path));
+      }
+    });
+    this.fMidiKeyLabel[pitch].forEach((key) => {
+      const { path, chan } = key;
+      if (chan === 0 || channel === chan - 1) {
+        this.setParamValue(path, _FaustBaseWebAudioDsp.remap(velocity, 0, 127, key.min, key.max));
+        if (this.fOutputHandler)
+          this.fOutputHandler(path, this.getParamValue(path));
+      }
+    });
+  }
+  keyOff(channel, pitch, velocity) {
+    if (this.fPlotHandler)
+      this.fCachedEvents.push({ type: "keyOff", data: [channel, pitch, velocity] });
+    this.fMidiKeyOffLabel[pitch].forEach((key) => {
+      const { path, chan } = key;
+      if (chan === 0 || channel === chan - 1) {
+        this.setParamValue(path, _FaustBaseWebAudioDsp.remap(velocity, 0, 127, key.min, key.max));
+        if (this.fOutputHandler)
+          this.fOutputHandler(path, this.getParamValue(path));
+      }
+    });
+    this.fMidiKeyLabel[pitch].forEach((key) => {
+      const { path, chan } = key;
+      if (chan === 0 || channel === chan - 1) {
+        this.setParamValue(path, 0);
+        if (this.fOutputHandler)
+          this.fOutputHandler(path, this.getParamValue(path));
+      }
+    });
   }
   pitchWheel(channel, wheel) {
     if (this.fPlotHandler)
@@ -3052,6 +3135,12 @@ var FaustOfflineProcessor = class {
   }
   pitchWheel(chan, value) {
     this.fDSPCode.pitchWheel(chan, value);
+  }
+  keyOn(channel, pitch, velocity) {
+    this.fDSPCode.keyOn(channel, pitch, velocity);
+  }
+  keyOff(channel, pitch, velocity) {
+    this.fDSPCode.keyOff(channel, pitch, velocity);
   }
   setParamValue(path, value) {
     this.fDSPCode.setParamValue(path, value);
@@ -3989,6 +4078,10 @@ var FaustAudioWorkletNode = class extends (globalThis.AudioWorkletNode || null) 
       this.ctrlChange(channel, data1, data2);
     else if (cmd === 14)
       this.pitchWheel(channel, data2 * 128 + data1);
+    if (cmd === 8 || cmd === 9 && data2 === 0)
+      this.keyOff(channel, data1, data2);
+    else if (cmd === 9)
+      this.keyOn(channel, data1, data2);
     else
       this.port.postMessage({ type: "midi", data });
   }
@@ -3998,6 +4091,14 @@ var FaustAudioWorkletNode = class extends (globalThis.AudioWorkletNode || null) 
   }
   pitchWheel(channel, wheel) {
     const e = { type: "pitchWheel", data: [channel, wheel] };
+    this.port.postMessage(e);
+  }
+  keyOn(channel, pitch, velocity) {
+    const e = { type: "keyOn", data: [channel, pitch, velocity] };
+    this.port.postMessage(e);
+  }
+  keyOff(channel, pitch, velocity) {
+    const e = { type: "keyOff", data: [channel, pitch, velocity] };
     this.port.postMessage(e);
   }
   get hasAccInput() {
@@ -4222,6 +4323,12 @@ var FaustScriptProcessorNode = class extends (globalThis.ScriptProcessorNode || 
   }
   pitchWheel(chan, value) {
     this.fDSPCode.pitchWheel(chan, value);
+  }
+  keyOn(channel, pitch, velocity) {
+    this.fDSPCode.keyOn(channel, pitch, velocity);
+  }
+  keyOff(channel, pitch, velocity) {
+    this.fDSPCode.keyOff(channel, pitch, velocity);
   }
   setParamValue(path, value) {
     this.fDSPCode.setParamValue(path, value);
