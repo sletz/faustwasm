@@ -911,7 +911,6 @@ export declare class FaustWebAudioDspVoice {
 	fNextVel: number;
 	fDate: number;
 	fLevel: number;
-	fRelease: number;
 	constructor($dsp: number, api: IFaustDspInstance, inputItems: string[], pathTable: {
 		[address: string]: number;
 	}, sampleRate: number);
