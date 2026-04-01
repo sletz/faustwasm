@@ -26,7 +26,7 @@ export class FaustScriptProcessorNode<
     protected handleDeviceMotion = undefined as any;
     protected handleDeviceOrientation = undefined as any;
 
-    init(
+    setupNode(
         instance: Poly extends true
             ? FaustPolyWebAudioDsp
             : FaustMonoWebAudioDsp
@@ -69,6 +69,10 @@ export class FaustScriptProcessorNode<
         };
 
         this.start();
+    }
+
+    init() {
+        this.fDSPCode.init();
     }
 
     // Public API

@@ -367,7 +367,7 @@ export class FaustMonoDspGenerator implements IFaustMonoDspGenerator {
                 monoDsp.getNumOutputs()
             ) as FaustMonoScriptProcessorNode;
             Object.setPrototypeOf(sp, FaustMonoScriptProcessorNode.prototype);
-            sp.init(monoDsp);
+            sp.setupNode(monoDsp);
             return sp as SP extends true
                 ? FaustMonoScriptProcessorNode
                 : FaustMonoAudioWorkletNode;
@@ -856,7 +856,7 @@ process = adaptorIns(dsp_code.process) : dsp_code.effect : adaptorOuts;
                 polyDsp.getNumOutputs()
             ) as FaustPolyScriptProcessorNode;
             Object.setPrototypeOf(sp, FaustPolyScriptProcessorNode.prototype);
-            sp.init(polyDsp);
+            sp.setupNode(polyDsp);
             return sp as SP extends true
                 ? FaustPolyScriptProcessorNode
                 : FaustPolyAudioWorkletNode;

@@ -283,6 +283,10 @@ const getFaustAudioWorkletProcessor = <Poly extends boolean = false>(
                     this.setupWamEventHandler();
                     break;
                 }
+                case 'init': {
+                    this.fDSPCode.init();
+                    break;
+                }
                 case 'start': {
                     this.fDSPCode.start();
                     break;

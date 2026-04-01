@@ -679,6 +679,11 @@ export interface IFaustBaseWebAudioDsp {
     ): void;
 
     /**
+     * Reinitialize the DSP using its configured sample rate.
+     */
+    init(): void;
+
+    /**
      * Start the DSP audio processing.
      */
     start(): void;
@@ -1576,6 +1581,8 @@ export class FaustBaseWebAudioDsp implements IFaustBaseWebAudioDsp {
         this.stopSensors();
     }
 
+    init() {}
+
     start() {
         this.fProcessing = true;
     }
@@ -1599,6 +1606,7 @@ export class FaustMonoWebAudioDsp
 {
     private fInstance: FaustMonoDspInstance;
     private fDSP!: number;
+    private fSampleRate: number;
 
     constructor(
         instance: FaustMonoDspInstance,
@@ -1609,6 +1617,7 @@ export class FaustMonoWebAudioDsp
     ) {
         super(sampleSize, bufferSize, soundfiles);
         this.fInstance = instance;
+        this.fSampleRate = sampleRate;
 
         console.log(`sampleSize: ${sampleSize} bufferSize: ${bufferSize}`);
 
@@ -1635,6 +1644,10 @@ export class FaustMonoWebAudioDsp
             // Init soundfiles memory
             this.initSoundfileMemory(allocator, this.fDSP);
         }
+    }
+
+    init() {
+        this.fInstance.api.init(this.fDSP, this.fSampleRate);
     }
 
     private initMemory(): number {
@@ -1904,7 +1917,7 @@ export class FaustWebAudioDspVoice {
     ) {
         this.fDSP = $dsp;
         this.fAPI = api;
-        this.fAPI.init(this.fDSP, sampleRate);
+        this.init(sampleRate);
         this.extractPaths(inputItems, pathTable);
     }
 
@@ -1914,6 +1927,10 @@ export class FaustWebAudioDspVoice {
 
     static normalizeVelocity(velocity: number) {
         return velocity / 127.0;
+    }
+
+    init(sampleRate: number) {
+        this.fAPI.init(this.fDSP, sampleRate);
     }
 
     private extractPaths(
@@ -2025,6 +2042,7 @@ export class FaustPolyWebAudioDsp
     private fAudioMixing!: number;
     private fAudioMixingHalf!: number;
     private fVoiceTable: FaustWebAudioDspVoice[];
+    private fSampleRate: number;
 
     constructor(
         instance: FaustPolyDspInstance,
@@ -2035,6 +2053,7 @@ export class FaustPolyWebAudioDsp
     ) {
         super(sampleSize, bufferSize, soundfiles);
         this.fInstance = instance;
+        this.fSampleRate = sampleRate;
 
         console.log(`sampleSize: ${sampleSize} bufferSize: ${bufferSize}`);
 
@@ -2085,6 +2104,12 @@ export class FaustPolyWebAudioDsp
                 this.initSoundfileMemory(allocator, this.fJSONDsp.size * voice);
             }
         }
+    }
+
+    init() {
+        this.fVoiceTable.forEach((voice) => voice.init(this.fSampleRate));
+        if (this.fInstance.effectAPI)
+            this.fInstance.effectAPI.init(this.fEffect, this.fSampleRate);
     }
 
     private initMemory() {

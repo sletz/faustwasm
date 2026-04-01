@@ -190,6 +190,10 @@ export class FaustOfflineProcessor<Poly extends boolean = false> {
         return this.fDSPCode.getUI();
     }
 
+    init() {
+        this.fDSPCode.init();
+    }
+
     start() {
         this.fDSPCode.start();
     }

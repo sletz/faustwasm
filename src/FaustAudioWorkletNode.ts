@@ -342,6 +342,10 @@ export class FaustAudioWorkletNode<
         return this.fDescriptor;
     }
 
+    init() {
+        this.port.postMessage({ type: 'init' });
+    }
+
     start() {
         this.port.postMessage({ type: 'start' });
     }
