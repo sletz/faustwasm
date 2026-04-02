@@ -223,6 +223,22 @@ var getFaustAudioWorkletProcessor = (dependencies, faustData, register = true) =
           this.fDSPCode.init();
           break;
         }
+        case "instanceInit": {
+          this.fDSPCode.instanceInit();
+          break;
+        }
+        case "instanceClear": {
+          this.fDSPCode.instanceClear();
+          break;
+        }
+        case "instanceConstants": {
+          this.fDSPCode.instanceConstants();
+          break;
+        }
+        case "instanceResetUserInterface": {
+          this.fDSPCode.instanceResetUserInterface();
+          break;
+        }
         case "start": {
           this.fDSPCode.start();
           break;
@@ -3132,6 +3148,14 @@ var FaustBaseWebAudioDsp = class _FaustBaseWebAudioDsp {
   }
   init() {
   }
+  instanceInit() {
+  }
+  instanceClear() {
+  }
+  instanceConstants() {
+  }
+  instanceResetUserInterface() {
+  }
   start() {
     this.fProcessing = true;
   }
@@ -3166,6 +3190,18 @@ var FaustMonoWebAudioDsp = class extends FaustBaseWebAudioDsp {
   }
   init() {
     this.fInstance.api.init(this.fDSP, this.fSampleRate);
+  }
+  instanceInit() {
+    this.fInstance.api.instanceInit(this.fDSP, this.fSampleRate);
+  }
+  instanceClear() {
+    this.fInstance.api.instanceClear(this.fDSP);
+  }
+  instanceConstants() {
+    this.fInstance.api.instanceConstants(this.fDSP, this.fSampleRate);
+  }
+  instanceResetUserInterface() {
+    this.fInstance.api.instanceResetUserInterface(this.fDSP);
   }
   initMemory() {
     this.fDSP = 0;
@@ -3316,7 +3352,6 @@ var FaustWebAudioDspVoice = class _FaustWebAudioDspVoice {
     this.fGainLabel = [];
     this.fKeyLabel = [];
     this.fVelLabel = [];
-    // Voice DSP code
     // Accessed by PolyDSPImp class
     this.fCurNote = _FaustWebAudioDspVoice.kFreeVoice;
     this.fNextNote = -1;
@@ -3325,6 +3360,7 @@ var FaustWebAudioDspVoice = class _FaustWebAudioDspVoice {
     this.fLevel = 0;
     this.fDSP = $dsp;
     this.fAPI = api;
+    this.fSampleRate = sampleRate;
     this.init(sampleRate);
     this.extractPaths(inputItems, pathTable);
   }
@@ -3355,6 +3391,18 @@ var FaustWebAudioDspVoice = class _FaustWebAudioDspVoice {
   }
   init(sampleRate) {
     this.fAPI.init(this.fDSP, sampleRate);
+  }
+  instanceInit() {
+    this.fAPI.instanceInit(this.fDSP, this.fSampleRate);
+  }
+  instanceClear() {
+    this.fAPI.instanceClear(this.fDSP);
+  }
+  instanceConstants() {
+    this.fAPI.instanceConstants(this.fDSP, this.fSampleRate);
+  }
+  instanceResetUserInterface() {
+    this.fAPI.instanceResetUserInterface(this.fDSP);
   }
   extractPaths(inputItems, pathTable) {
     inputItems.forEach((item) => {
@@ -3472,6 +3520,32 @@ var FaustPolyWebAudioDsp = class _FaustPolyWebAudioDsp extends FaustBaseWebAudio
     this.fVoiceTable.forEach((voice) => voice.init(this.fSampleRate));
     if (this.fInstance.effectAPI)
       this.fInstance.effectAPI.init(this.fEffect, this.fSampleRate);
+  }
+  instanceInit() {
+    this.fVoiceTable.forEach((voice) => voice.instanceInit());
+    if (this.fInstance.effectAPI)
+      this.fInstance.effectAPI.instanceInit(
+        this.fEffect,
+        this.fSampleRate
+      );
+  }
+  instanceClear() {
+    this.fVoiceTable.forEach((voice) => voice.instanceClear());
+    if (this.fInstance.effectAPI)
+      this.fInstance.effectAPI.instanceClear(this.fEffect);
+  }
+  instanceConstants() {
+    this.fVoiceTable.forEach((voice) => voice.instanceConstants());
+    if (this.fInstance.effectAPI)
+      this.fInstance.effectAPI.instanceConstants(
+        this.fEffect,
+        this.fSampleRate
+      );
+  }
+  instanceResetUserInterface() {
+    this.fVoiceTable.forEach((voice) => voice.instanceResetUserInterface());
+    if (this.fInstance.effectAPI)
+      this.fInstance.effectAPI.instanceResetUserInterface(this.fEffect);
   }
   initMemory() {
     this.fEffect = this.fJSONDsp.size * this.fInstance.voices;
@@ -3931,6 +4005,18 @@ var FaustOfflineProcessor = class {
   }
   init() {
     this.fDSPCode.init();
+  }
+  instanceInit() {
+    this.fDSPCode.instanceInit();
+  }
+  instanceClear() {
+    this.fDSPCode.instanceClear();
+  }
+  instanceConstants() {
+    this.fDSPCode.instanceConstants();
+  }
+  instanceResetUserInterface() {
+    this.fDSPCode.instanceResetUserInterface();
   }
   start() {
     this.fDSPCode.start();
@@ -4975,7 +5061,10 @@ var FaustAudioWorkletNode = class extends (globalThis.AudioWorkletNode || null) 
   }
   setParamValue(path, value) {
     const resolved = this.fParamAliases[path] || path;
-    this.port.postMessage({ type: "param", data: { path: resolved, value } });
+    this.port.postMessage({
+      type: "param",
+      data: { path: resolved, value }
+    });
     const param = this.parameters.get(resolved);
     if (param) param.setValueAtTime(value, this.context.currentTime);
   }
@@ -5001,6 +5090,18 @@ var FaustAudioWorkletNode = class extends (globalThis.AudioWorkletNode || null) 
   }
   init() {
     this.port.postMessage({ type: "init" });
+  }
+  instanceInit() {
+    this.port.postMessage({ type: "instanceInit" });
+  }
+  instanceClear() {
+    this.port.postMessage({ type: "instanceClear" });
+  }
+  instanceConstants() {
+    this.port.postMessage({ type: "instanceConstants" });
+  }
+  instanceResetUserInterface() {
+    this.port.postMessage({ type: "instanceResetUserInterface" });
   }
   start() {
     this.port.postMessage({ type: "start" });
@@ -5130,6 +5231,18 @@ var FaustScriptProcessorNode = class extends (globalThis.ScriptProcessorNode || 
   }
   init() {
     this.fDSPCode.init();
+  }
+  instanceInit() {
+    this.fDSPCode.instanceInit();
+  }
+  instanceClear() {
+    this.fDSPCode.instanceClear();
+  }
+  instanceConstants() {
+    this.fDSPCode.instanceConstants();
+  }
+  instanceResetUserInterface() {
+    this.fDSPCode.instanceResetUserInterface();
   }
   // Public API
   /** Start accelerometer and gyroscope handlers */

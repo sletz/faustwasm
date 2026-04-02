@@ -734,6 +734,22 @@ export interface IFaustBaseWebAudioDsp {
 	 */
 	init(): void;
 	/**
+	 * Reinitialize the DSP instance state using its configured sample rate.
+	 */
+	instanceInit(): void;
+	/**
+	 * Clear the DSP instance state.
+	 */
+	instanceClear(): void;
+	/**
+	 * Reinitialize the DSP instance constants using its configured sample rate.
+	 */
+	instanceConstants(): void;
+	/**
+	 * Reset DSP user interface parameters to their default values.
+	 */
+	instanceResetUserInterface(): void;
+	/**
 	 * Start the DSP audio processing.
 	 */
 	start(): void;
@@ -908,6 +924,10 @@ export declare class FaustBaseWebAudioDsp implements IFaustBaseWebAudioDsp {
 	startSensors(): void;
 	stopSensors(): void;
 	init(): void;
+	instanceInit(): void;
+	instanceClear(): void;
+	instanceConstants(): void;
+	instanceResetUserInterface(): void;
 	start(): void;
 	stop(): void;
 	destroy(): void;
@@ -918,6 +938,10 @@ export declare class FaustMonoWebAudioDsp extends FaustBaseWebAudioDsp implement
 	private fSampleRate;
 	constructor(instance: FaustMonoDspInstance, sampleRate: number, sampleSize: number, bufferSize: number, soundfiles: LooseFaustDspFactory["soundfiles"]);
 	init(): void;
+	instanceInit(): void;
+	instanceClear(): void;
+	instanceConstants(): void;
+	instanceResetUserInterface(): void;
 	private initMemory;
 	toString(): string;
 	compute(input: Float32Array[] | ((input: Float32Array[] | Float64Array[]) => any), output: Float32Array[] | ((output: Float32Array[] | Float64Array[]) => any)): boolean;
@@ -945,6 +969,7 @@ export declare class FaustWebAudioDspVoice {
 	private fVelLabel;
 	private fDSP;
 	private fAPI;
+	private fSampleRate;
 	fCurNote: number;
 	fNextNote: number;
 	fNextVel: number;
@@ -956,6 +981,10 @@ export declare class FaustWebAudioDspVoice {
 	static midiToFreq(note: number): number;
 	static normalizeVelocity(velocity: number): number;
 	init(sampleRate: number): void;
+	instanceInit(): void;
+	instanceClear(): void;
+	instanceConstants(): void;
+	instanceResetUserInterface(): void;
 	private extractPaths;
 	keyOn(pitch: number, velocity: number, legato?: boolean): void;
 	keyOff(hard?: boolean): void;
@@ -974,6 +1003,10 @@ export declare class FaustPolyWebAudioDsp extends FaustBaseWebAudioDsp implement
 	private fSampleRate;
 	constructor(instance: FaustPolyDspInstance, sampleRate: number, sampleSize: number, bufferSize: number, soundfiles: LooseFaustDspFactory["soundfiles"]);
 	init(): void;
+	instanceInit(): void;
+	instanceClear(): void;
+	instanceConstants(): void;
+	instanceResetUserInterface(): void;
 	private initMemory;
 	toString(): string;
 	private allocVoice;
@@ -1269,6 +1302,10 @@ export declare class FaustOfflineProcessor<Poly extends boolean = false> {
 	getDescriptors(): FaustUIInputItem[];
 	getUI(): FaustUIDescriptor;
 	init(): void;
+	instanceInit(): void;
+	instanceClear(): void;
+	instanceConstants(): void;
+	instanceResetUserInterface(): void;
 	start(): void;
 	stop(): void;
 	destroy(): void;
@@ -1475,6 +1512,10 @@ export declare class FaustAudioWorkletNode<Poly extends boolean = false> extends
 	getUI(): FaustUIDescriptor;
 	getDescriptors(): FaustUIInputItem[];
 	init(): void;
+	instanceInit(): void;
+	instanceClear(): void;
+	instanceConstants(): void;
+	instanceResetUserInterface(): void;
 	start(): void;
 	stop(): void;
 	destroy(): void;
@@ -1515,6 +1556,10 @@ export declare class FaustScriptProcessorNode<Poly extends boolean = false> exte
 	protected handleDeviceOrientation: any;
 	setupNode(instance: Poly extends true ? FaustPolyWebAudioDsp : FaustMonoWebAudioDsp): void;
 	init(): void;
+	instanceInit(): void;
+	instanceClear(): void;
+	instanceConstants(): void;
+	instanceResetUserInterface(): void;
 	/** Start accelerometer and gyroscope handlers */
 	startSensors(): Promise<void>;
 	/** Stop accelerometer and gyroscope handlers */
