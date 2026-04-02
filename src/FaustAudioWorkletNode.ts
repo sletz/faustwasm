@@ -314,7 +314,10 @@ export class FaustAudioWorkletNode<
 
     setParamValue(path: string, value: number) {
         const resolved = this.fParamAliases[path] || path;
-        this.port.postMessage({ type: 'param', data: { path: resolved, value } });
+        this.port.postMessage({
+            type: 'param',
+            data: { path: resolved, value }
+        });
         // Set value on AudioParam (but this is not used on Processor side for now)
         const param = this.parameters.get(resolved);
         if (param) param.setValueAtTime(value, this.context.currentTime);
@@ -344,6 +347,22 @@ export class FaustAudioWorkletNode<
 
     init() {
         this.port.postMessage({ type: 'init' });
+    }
+
+    instanceInit() {
+        this.port.postMessage({ type: 'instanceInit' });
+    }
+
+    instanceClear() {
+        this.port.postMessage({ type: 'instanceClear' });
+    }
+
+    instanceConstants() {
+        this.port.postMessage({ type: 'instanceConstants' });
+    }
+
+    instanceResetUserInterface() {
+        this.port.postMessage({ type: 'instanceResetUserInterface' });
     }
 
     start() {

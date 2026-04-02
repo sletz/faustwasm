@@ -25,11 +25,9 @@ export interface IFaustOfflineProcessor extends IFaustBaseWebAudioDsp {
 }
 
 export interface IFaustMonoOfflineProcessor
-    extends IFaustOfflineProcessor,
-        IFaustMonoWebAudioDsp {}
+    extends IFaustOfflineProcessor, IFaustMonoWebAudioDsp {}
 export interface IFaustPolyOfflineProcessor
-    extends IFaustOfflineProcessor,
-        IFaustPolyWebAudioDsp {}
+    extends IFaustOfflineProcessor, IFaustPolyWebAudioDsp {}
 
 export class FaustOfflineProcessor<Poly extends boolean = false> {
     protected fDSPCode!: Poly extends true
@@ -192,6 +190,22 @@ export class FaustOfflineProcessor<Poly extends boolean = false> {
 
     init() {
         this.fDSPCode.init();
+    }
+
+    instanceInit() {
+        this.fDSPCode.instanceInit();
+    }
+
+    instanceClear() {
+        this.fDSPCode.instanceClear();
+    }
+
+    instanceConstants() {
+        this.fDSPCode.instanceConstants();
+    }
+
+    instanceResetUserInterface() {
+        this.fDSPCode.instanceResetUserInterface();
     }
 
     start() {

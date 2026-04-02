@@ -75,6 +75,22 @@ export class FaustScriptProcessorNode<
         this.fDSPCode.init();
     }
 
+    instanceInit() {
+        this.fDSPCode.instanceInit();
+    }
+
+    instanceClear() {
+        this.fDSPCode.instanceClear();
+    }
+
+    instanceConstants() {
+        this.fDSPCode.instanceConstants();
+    }
+
+    instanceResetUserInterface() {
+        this.fDSPCode.instanceResetUserInterface();
+    }
+
     // Public API
 
     /** Start accelerometer and gyroscope handlers */

@@ -44,18 +44,17 @@ export interface FaustAudioWorkletProcessorDependencies<
     FaustWasmInstantiator: typeof FaustWasmInstantiator;
     FaustAudioWorkletProcessorCommunicator: typeof FaustAudioWorkletProcessorCommunicator;
 }
-export interface FaustAudioWorkletNodeOptions<Poly extends boolean = false>
-    extends AudioWorkletNodeOptions {
+export interface FaustAudioWorkletNodeOptions<
+    Poly extends boolean = false
+> extends AudioWorkletNodeOptions {
     processorOptions: Poly extends true
         ? FaustPolyAudioWorkletProcessorOptions
         : FaustMonoAudioWorkletProcessorOptions;
 }
-export interface FaustMonoAudioWorkletNodeOptions
-    extends AudioWorkletNodeOptions {
+export interface FaustMonoAudioWorkletNodeOptions extends AudioWorkletNodeOptions {
     processorOptions: FaustMonoAudioWorkletProcessorOptions;
 }
-export interface FaustPolyAudioWorkletNodeOptions
-    extends AudioWorkletNodeOptions {
+export interface FaustPolyAudioWorkletNodeOptions extends AudioWorkletNodeOptions {
     processorOptions: FaustPolyAudioWorkletProcessorOptions;
 }
 export interface FaustAudioWorkletProcessorOptions {
@@ -65,12 +64,10 @@ export interface FaustAudioWorkletProcessorOptions {
     moduleId?: string;
     instanceId?: string;
 }
-export interface FaustMonoAudioWorkletProcessorOptions
-    extends FaustAudioWorkletProcessorOptions {
+export interface FaustMonoAudioWorkletProcessorOptions extends FaustAudioWorkletProcessorOptions {
     factory: LooseFaustDspFactory;
 }
-export interface FaustPolyAudioWorkletProcessorOptions
-    extends FaustAudioWorkletProcessorOptions {
+export interface FaustPolyAudioWorkletProcessorOptions extends FaustAudioWorkletProcessorOptions {
     voiceFactory: LooseFaustDspFactory;
     mixerModule: WebAssembly.Module;
     voices: number;
@@ -285,6 +282,22 @@ const getFaustAudioWorkletProcessor = <Poly extends boolean = false>(
                 }
                 case 'init': {
                     this.fDSPCode.init();
+                    break;
+                }
+                case 'instanceInit': {
+                    this.fDSPCode.instanceInit();
+                    break;
+                }
+                case 'instanceClear': {
+                    this.fDSPCode.instanceClear();
+                    break;
+                }
+                case 'instanceConstants': {
+                    this.fDSPCode.instanceConstants();
+                    break;
+                }
+                case 'instanceResetUserInterface': {
+                    this.fDSPCode.instanceResetUserInterface();
                     break;
                 }
                 case 'start': {

@@ -684,6 +684,26 @@ export interface IFaustBaseWebAudioDsp {
     init(): void;
 
     /**
+     * Reinitialize the DSP instance state using its configured sample rate.
+     */
+    instanceInit(): void;
+
+    /**
+     * Clear the DSP instance state.
+     */
+    instanceClear(): void;
+
+    /**
+     * Reinitialize the DSP instance constants using its configured sample rate.
+     */
+    instanceConstants(): void;
+
+    /**
+     * Reset DSP user interface parameters to their default values.
+     */
+    instanceResetUserInterface(): void;
+
+    /**
      * Start the DSP audio processing.
      */
     start(): void;
@@ -701,8 +721,7 @@ export interface IFaustBaseWebAudioDsp {
 
 export type IFaustMonoWebAudioDsp = IFaustBaseWebAudioDsp;
 export interface IFaustMonoWebAudioNode
-    extends IFaustMonoWebAudioDsp,
-        AudioNode {}
+    extends IFaustMonoWebAudioDsp, AudioNode {}
 
 export interface IFaustPolyWebAudioDsp extends IFaustBaseWebAudioDsp {
     /**
@@ -731,8 +750,7 @@ export interface IFaustPolyWebAudioDsp extends IFaustBaseWebAudioDsp {
     allNotesOff(hard: boolean): void;
 }
 export interface IFaustPolyWebAudioNode
-    extends IFaustPolyWebAudioDsp,
-        AudioNode {}
+    extends IFaustPolyWebAudioDsp, AudioNode {}
 
 export class FaustBaseWebAudioDsp implements IFaustBaseWebAudioDsp {
     protected fOutputHandler: OutputParamHandler | null = null;
@@ -1583,6 +1601,14 @@ export class FaustBaseWebAudioDsp implements IFaustBaseWebAudioDsp {
 
     init() {}
 
+    instanceInit() {}
+
+    instanceClear() {}
+
+    instanceConstants() {}
+
+    instanceResetUserInterface() {}
+
     start() {
         this.fProcessing = true;
     }
@@ -1648,6 +1674,22 @@ export class FaustMonoWebAudioDsp
 
     init() {
         this.fInstance.api.init(this.fDSP, this.fSampleRate);
+    }
+
+    instanceInit() {
+        this.fInstance.api.instanceInit(this.fDSP, this.fSampleRate);
+    }
+
+    instanceClear() {
+        this.fInstance.api.instanceClear(this.fDSP);
+    }
+
+    instanceConstants() {
+        this.fInstance.api.instanceConstants(this.fDSP, this.fSampleRate);
+    }
+
+    instanceResetUserInterface() {
+        this.fInstance.api.instanceResetUserInterface(this.fDSP);
     }
 
     private initMemory(): number {
@@ -1901,6 +1943,7 @@ export class FaustWebAudioDspVoice {
     private fVelLabel: number[] = [];
     private fDSP: number; // Voice DSP location in wasm memory
     private fAPI: IFaustDspInstance; // Voice DSP code
+    private fSampleRate: number;
     // Accessed by PolyDSPImp class
     fCurNote = FaustWebAudioDspVoice.kFreeVoice;
     fNextNote = -1;
@@ -1917,6 +1960,7 @@ export class FaustWebAudioDspVoice {
     ) {
         this.fDSP = $dsp;
         this.fAPI = api;
+        this.fSampleRate = sampleRate;
         this.init(sampleRate);
         this.extractPaths(inputItems, pathTable);
     }
@@ -1931,6 +1975,22 @@ export class FaustWebAudioDspVoice {
 
     init(sampleRate: number) {
         this.fAPI.init(this.fDSP, sampleRate);
+    }
+
+    instanceInit() {
+        this.fAPI.instanceInit(this.fDSP, this.fSampleRate);
+    }
+
+    instanceClear() {
+        this.fAPI.instanceClear(this.fDSP);
+    }
+
+    instanceConstants() {
+        this.fAPI.instanceConstants(this.fDSP, this.fSampleRate);
+    }
+
+    instanceResetUserInterface() {
+        this.fAPI.instanceResetUserInterface(this.fDSP);
     }
 
     private extractPaths(
@@ -2110,6 +2170,36 @@ export class FaustPolyWebAudioDsp
         this.fVoiceTable.forEach((voice) => voice.init(this.fSampleRate));
         if (this.fInstance.effectAPI)
             this.fInstance.effectAPI.init(this.fEffect, this.fSampleRate);
+    }
+
+    instanceInit() {
+        this.fVoiceTable.forEach((voice) => voice.instanceInit());
+        if (this.fInstance.effectAPI)
+            this.fInstance.effectAPI.instanceInit(
+                this.fEffect,
+                this.fSampleRate
+            );
+    }
+
+    instanceClear() {
+        this.fVoiceTable.forEach((voice) => voice.instanceClear());
+        if (this.fInstance.effectAPI)
+            this.fInstance.effectAPI.instanceClear(this.fEffect);
+    }
+
+    instanceConstants() {
+        this.fVoiceTable.forEach((voice) => voice.instanceConstants());
+        if (this.fInstance.effectAPI)
+            this.fInstance.effectAPI.instanceConstants(
+                this.fEffect,
+                this.fSampleRate
+            );
+    }
+
+    instanceResetUserInterface() {
+        this.fVoiceTable.forEach((voice) => voice.instanceResetUserInterface());
+        if (this.fInstance.effectAPI)
+            this.fInstance.effectAPI.instanceResetUserInterface(this.fEffect);
     }
 
     private initMemory() {
